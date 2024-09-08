@@ -73,6 +73,18 @@ function SellValue_OnLoad()
 	end
 	);
 
+	hooksecurefunc(GameTooltip, "SetLootRollItem", function(tip, id)
+		DEFAULT_CHAT_FRAME:AddMessage("DEBUG SellValue: Testing SetLootRollItem");
+		local _, _, stackCount = GetLootRollItemInfo(id);
+		if stackCount > 0 then
+			local link = GetLootRollItemLink(id);
+			local itemID = SellValue_IDFromLink(link)
+
+			SellValue_SetTooltip(itemID, stackCount);
+		end
+	end
+	);
+
 	-- Hook bag tooltip
 	hooksecurefunc(GameTooltip, "SetBagItem", function(tip, bag, slot)
 		if not MerchantFrame:IsVisible() then
