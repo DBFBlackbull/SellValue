@@ -74,7 +74,6 @@ function SellValue_OnLoad()
 	);
 
 	hooksecurefunc(GameTooltip, "SetLootRollItem", function(tip, id)
-		DEFAULT_CHAT_FRAME:AddMessage("DEBUG SellValue: Testing SetLootRollItem");
 		local _, _, stackCount = GetLootRollItemInfo(id);
 		if stackCount > 0 then
 			local link = GetLootRollItemLink(id);
