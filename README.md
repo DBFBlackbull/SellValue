@@ -13,6 +13,7 @@ Shows the value of items on the tooltip on
 
 - Items linked in chat
 - Items in the loot window
+- Items in the roll window
 - Items in bags
 - Items in bank
 - Items in Quest reward
