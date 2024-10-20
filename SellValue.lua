@@ -73,6 +73,7 @@ function SellValue_OnLoad()
 	end
 	);
 
+	-- Hook group loot roll tooltip
 	hooksecurefunc(GameTooltip, "SetLootRollItem", function(tip, id)
 		local _, _, stackCount = GetLootRollItemInfo(id);
 		if stackCount > 0 then
@@ -111,6 +112,26 @@ function SellValue_OnLoad()
 	hooksecurefunc(GameTooltip, "SetHyperlink", function(tip, link)
 		local itemID = SellValue_IDFromLink(link);
 		SellValue_SetTooltip(itemID, 1);
+	end
+	);
+
+	-- Hook mail inbox tooltip
+	hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, index, attachmentIndex)
+		local link = GetInboxItemLink(index, attachmentIndex);
+		local _, _, stackCount = GetInboxItem(index, attachmentIndex)
+		local itemID = SellValue_IDFromLink(link);
+
+		SellValue_SetTooltip(itemID, stackCount);
+	end
+	);
+
+	-- Hook mail send tooltip
+	hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, index)
+		local link = GetSendMailItemLink(index);
+		local _, _, stackCount = GetSendMailItem(index)
+		local itemID = SellValue_IDFromLink(link);
+
+		SellValue_SetTooltip(itemID, stackCount);
 	end
 	);
 
