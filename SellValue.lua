@@ -115,26 +115,6 @@ function SellValue_OnLoad()
 	end
 	);
 
-	-- Hook mail inbox tooltip
-	hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, index, attachmentIndex)
-		local link = GetInboxItemLink(index, attachmentIndex);
-		local _, _, stackCount = GetInboxItem(index, attachmentIndex)
-		local itemID = SellValue_IDFromLink(link);
-
-		SellValue_SetTooltip(itemID, stackCount);
-	end
-	);
-
-	-- Hook mail send tooltip
-	hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, index)
-		local link = GetSendMailItemLink(index);
-		local _, _, stackCount = GetSendMailItem(index)
-		local itemID = SellValue_IDFromLink(link);
-
-		SellValue_SetTooltip(itemID, stackCount);
-	end
-	);
-
 	-- Hook quest reward tooltip
 	hooksecurefunc(GameTooltip, "SetQuestItem", function(tip, qtype, slot)
 		if qtype == "reward" or qtype == "choice" then
