@@ -1,5 +1,6 @@
 -- global SellValues = itemid -> price
 
+local _G = getfenv(0)
 local function hooksecurefunc(arg1, arg2, arg3)
 	if type(arg1) == "string" then
 		arg1, arg2, arg3 = _G, arg1, arg2
@@ -51,15 +52,10 @@ function SellValue_OnLoad()
 	SellValue_Tooltip:SetScript("OnTooltipAddMoney", SellValue_OnTooltipAddMoney);
 
 	-- Hook item links tooltip
-	local org_OnHyperlinkShow = ChatFrame_OnHyperlinkShow
-	function ChatFrame_OnHyperlinkShow(link, text, button)
-		-- First, call the original function
-		org_OnHyperlinkShow(link, text, button);
-
-		-- Now, call your custom function
+	hooksecurefunc("ChatFrame_OnHyperlinkShow", function(link, text, button)
 		local itemID = SellValue_IDFromLink(link);
 		SellValue_SetTooltip(itemID, 1, ItemRefTooltip);
-	end
+	end)
 
 	-- Hook loot tooltip
 	hooksecurefunc(GameTooltip, "SetLootItem", function(tip, lootIndex)
