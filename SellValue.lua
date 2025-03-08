@@ -29,15 +29,11 @@ function SellValue_SetTooltip(itemID, stackCount, tooltip)
 			tooltip:AddLine(ITEM_UNSELLABLE, 1.0, 1.0, 1.0);
 		else
 			SetTooltipMoney(tooltip, price * stackCount);
-
-		end  -- if price > 0
+		end
 
 		-- Adjust width and height to account for new lines
-		tooltip:SetHeight(tooltip:GetHeight() + 14);
-		if tooltip:GetWidth() < 120 then
-			tooltip:SetWidth(120);
-		end
-	end  -- if price
+		tooltip:Show()
+	end
 end
 
 function SellValue_OnLoad()
