@@ -100,10 +100,15 @@ function SellValue_OnLoad()
 	end
 	);
 
-	-- Hook hyper links, used for BankItems addon
-	hooksecurefunc(GameTooltip, "SetHyperlink", function(tip, link)
+	-- Hook hyper links, used for BankItems and Bagnon_Forever addons
+	hooksecurefunc(GameTooltip, "SetHyperlink", function(tip, link, count)
 		local itemID = SellValue_IDFromLink(link);
-		SellValue_SetTooltip(itemID, 1);
+		local stackCount = 1
+		if type(count) == "number" then
+			stackCount = count
+		end
+
+		SellValue_SetTooltip(itemID, stackCount);
 	end
 	);
 
