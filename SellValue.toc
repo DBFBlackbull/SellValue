@@ -1,7 +1,8 @@
 ## Interface: 11200
 ## Title: Sell Value
 ## Notes: Display the sell value of an item when not at a vendor
-## SavedVariables: SellValues
+## Author: CapnBry & Greenman & kebabstorm & dbfblackbull
 ## LoadOnDemand: 0
-## Author: CapnBry & Greenman & kebabstorm
+## SavedVariables: SellValues
+## OptionalDeps: AtlasLoot
 SellValue.xml

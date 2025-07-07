@@ -112,6 +112,19 @@ function SellValue_OnLoad()
 	end
 	);
 
+	if AtlasLootTooltip then
+		hooksecurefunc(AtlasLootTooltip, "SetHyperlink", function(tip, link, count)
+			local itemID = SellValue_IDFromLink(link);
+			local stackCount = 1
+			if type(count) == "number" then
+				stackCount = count
+			end
+
+			SellValue_SetTooltip(itemID, stackCount, AtlasLootTooltip);
+		end
+		)
+	end
+
 	-- Hook quest reward tooltip
 	hooksecurefunc(GameTooltip, "SetQuestItem", function(tip, qtype, slot)
 		if qtype == "reward" or qtype == "choice" then
