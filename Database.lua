@@ -1,6 +1,6 @@
 function SellValue_InitializeDB()
 	-- Checking last added item to update the database
-	if not SellValues and not SellValue["item:22399"] then
+	if not SellValues or not SellValue["item:24283"] then
 		SellValues = {
 			["item:25"] = 7,
 			["item:35"] = 9,

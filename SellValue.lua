@@ -20,9 +20,6 @@ function SellValue_SetTooltip(itemID, stackCount, tooltip)
 		tooltip = GameTooltip
 	end
 
-	if not SellValues then
-		return
-	end
 	local price = SellValues[itemID];
 	if price then
 		if price == 0 then
@@ -173,6 +170,24 @@ function SellValue_OnLoad()
 		SellValue_SetTooltip(itemID, stackCount);
 	end
 	);
+
+	-- Trade from Player
+	hooksecurefunc(GameTooltip, "SetTradePlayerItem", function(tip, index)
+		local _, _, stackCount = GetTradePlayerItemInfo(index)
+		local link = GetTradePlayerItemLink(index)
+
+		local itemID = SellValue_IDFromLink(link)
+		SellValue_SetTooltip(itemID, stackCount)
+	end)
+
+	-- Trade from Target
+	hooksecurefunc(GameTooltip, "SetTradeTargetItem", function(tip, index)
+		local _, _, stackCount = GetTradeTargetItemInfo(index)
+		local link = GetTradeTargetItemLink(index)
+
+		local itemID = SellValue_IDFromLink(link)
+		SellValue_SetTooltip(itemID, stackCount)
+	end)
 end
 
 function SellValue_OnEvent()
@@ -242,29 +257,34 @@ function SellValue_OnHide()
 end
 
 function SellValue_GetItemID(bag, slot)
-	local linktext = nil;
+	local link;
 
 	if (bag == -1) then
-		linktext = GetInventoryItemLink("player", slot);
+		link = GetInventoryItemLink("player", slot);
 	else
-		linktext = GetContainerItemLink(bag, slot);
+		link = GetContainerItemLink(bag, slot);
 	end
 
-	if linktext then
-		return SellValue_IDFromLink(linktext);
-	else
-		return "";
-	end
+	return SellValue_IDFromLink(link);
 end
 
 function SellValue_IDFromLink(itemlink)
-	if itemlink then
-		local foundlink, _, name = string.find(itemlink, "(item:%d+)");
-		if foundlink then
-			return name;
-		else
-			return itemlink;
-		end
+	if not itemlink then
+		return
 	end
-	return ;
+
+	local foundlink, _, itemID = string.find(itemlink, "(item:%d+)");
+	if not foundlink then
+		return
+	end
+
+	return itemID
+end
+
+function SellValue_IDFromName(name)
+	if not name then
+		return
+	end
+
+	return SellValues[name]
 end
