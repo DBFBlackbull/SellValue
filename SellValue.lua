@@ -37,11 +37,8 @@ function SellValue_SetTooltip(tooltip, itemLink, stackCount)
 end
 
 function SellValue_OnLoad()
-
-	-- Get initial prices from database
-	SellValue_InitializeDB();
-
 	this:RegisterEvent("MERCHANT_SHOW");
+	this:RegisterEvent("ADDON_LOADED");
 
 	SellValue_Saved_OnTooltipAddMoney = SellValue_Tooltip:GetScript("OnTooltipAddMoney");
 
@@ -154,6 +151,10 @@ function SellValue_OnLoad()
 end
 
 function SellValue_OnEvent()
+	if event == "ADDON_LOADED" and arg1 == "SellValue" then
+		return SellValue_InitializeDB();
+	end
+
 	if event == "MERCHANT_SHOW" then
 		return SellValue_MerchantScan(this);
 	end
@@ -172,27 +173,26 @@ function SellValue_OnTooltipAddMoney ()
 
 	-- The money in repair mode is the cost to repair, not sell
 	if InRepairMode() then
-		return ;
-	end ;
+		return
+	end
 
 	SellValue_LastItemMoney = arg1;
 end
 
 function SellValue_SaveFor(bag, slot, itemID, money)
-
 	if not (bag and slot and itemID and money) then
-		return ;
-	end ;
+		return
+	end
 
 	local _, stackCount = GetContainerItemInfo(bag, slot);
 	if stackCount and stackCount > 0 then
 		local costOfOne = money / stackCount;
 
 		if not SellValues then
-			SellValues = {};
+			SellValues = {}
 		end
 
-		SellValues[itemID] = costOfOne;
+		SellValues[itemID] = costOfOne
 	end
 end
 
@@ -202,7 +202,7 @@ function SellValue_MerchantScan(frame)
 		for slot = 1, GetContainerNumSlots(bag) do
 
 			local itemID = SellValue_IDFromLink(GetContainerItemLink(bag, slot))
-			if itemID ~= "" then
+			if itemID then
 				SellValue_LastItemMoney = 0;
 				SellValue_Tooltip:SetBagItem(bag, slot);
 				SellValue_SaveFor(bag, slot, itemID, SellValue_LastItemMoney);
