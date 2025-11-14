@@ -15,10 +15,13 @@ local function hooksecurefunc(arg1, arg2, arg3)
 	end
 end
 
-function SellValue_SetTooltip(itemID, stackCount, tooltip)
-	if not tooltip then
-		tooltip = GameTooltip
+function SellValue_SetTooltip(tooltip, itemLink, stackCount)
+	local itemID = SellValue_IDFromLink(itemLink)
+	if not itemID then
+		return
 	end
+
+	stackCount = math.max(stackCount, 1)
 
 	local price = SellValues[itemID];
 	if price then
@@ -45,98 +48,70 @@ function SellValue_OnLoad()
 	SellValue_Tooltip:SetScript("OnTooltipAddMoney", SellValue_OnTooltipAddMoney);
 
 	-- Hook item links tooltip
-	hooksecurefunc("ChatFrame_OnHyperlinkShow", function(link, text, button)
-		local itemID = SellValue_IDFromLink(link);
-		SellValue_SetTooltip(itemID, 1, ItemRefTooltip);
+	hooksecurefunc("ChatFrame_OnHyperlinkShow", function(itemLink, text, button)
+		SellValue_SetTooltip(ItemRefTooltip, itemLink, 1);
 	end)
 
 	-- Hook loot tooltip
 	hooksecurefunc(GameTooltip, "SetLootItem", function(tip, lootIndex)
 		local _, _, stackCount = GetLootSlotInfo(lootIndex);
-		if stackCount > 0 then
-			local link = GetLootSlotLink(lootIndex);
-			local itemID = SellValue_IDFromLink(link)
-
-			SellValue_SetTooltip(itemID, stackCount);
-		end
-	end
-	);
+		SellValue_SetTooltip(GameTooltip, GetLootSlotLink(lootIndex), stackCount);
+	end)
 
 	-- Hook group loot roll tooltip
-	hooksecurefunc(GameTooltip, "SetLootRollItem", function(tip, id)
-		local _, _, stackCount = GetLootRollItemInfo(id);
-		if stackCount > 0 then
-			local link = GetLootRollItemLink(id);
-			local itemID = SellValue_IDFromLink(link)
-
-			SellValue_SetTooltip(itemID, stackCount);
-		end
-	end
-	);
+	hooksecurefunc(GameTooltip, "SetLootRollItem", function(tip, lootIndex)
+		local _, _, stackCount = GetLootRollItemInfo(lootIndex);
+		SellValue_SetTooltip(GameTooltip, GetLootRollItemLink(lootIndex), stackCount);
+	end)
 
 	-- Hook bag tooltip
 	hooksecurefunc(GameTooltip, "SetBagItem", function(tip, bag, slot)
 		if not MerchantFrame:IsVisible() then
 			local _, stackCount = GetContainerItemInfo(bag, slot);
-			local itemID = SellValue_GetItemID(bag, slot);
-
-			SellValue_SetTooltip(itemID, stackCount);
+			SellValue_SetTooltip(GameTooltip, GetContainerItemLink(bag, slot), stackCount);
 		end
-	end
-	);
-
+	end)
 
 	-- Hook bank tooltip
 	hooksecurefunc(GameTooltip, "SetInventoryItem", function(tip, unit, slot)
 		if not MerchantFrame:IsVisible() and slot > 19 then
 			local stackCount = GetInventoryItemCount(unit, slot);
-			local itemID = SellValue_GetItemID(-1, slot);
-
-			SellValue_SetTooltip(itemID, stackCount);
+			SellValue_SetTooltip(GameTooltip, GetInventoryItemLink("player", slot), stackCount);
 		end
-	end
-	);
+	end)
 
 	-- Hook hyper links, used for BankItems and Bagnon_Forever addons
-	hooksecurefunc(GameTooltip, "SetHyperlink", function(tip, link, count)
-		local itemID = SellValue_IDFromLink(link);
+	hooksecurefunc(GameTooltip, "SetHyperlink", function(tip, itemLink, count)
 		local stackCount = 1
 		if type(count) == "number" then
 			stackCount = count
 		end
 
-		SellValue_SetTooltip(itemID, stackCount);
-	end
-	);
+		SellValue_SetTooltip(GameTooltip, itemLink, stackCount);
+	end)
 
 	if AtlasLootTooltip then
-		hooksecurefunc(AtlasLootTooltip, "SetHyperlink", function(tip, link, count)
-			local itemID = SellValue_IDFromLink(link);
+		hooksecurefunc(AtlasLootTooltip, "SetHyperlink", function(tip, itemLink, count)
 			local stackCount = 1
 			if type(count) == "number" then
 				stackCount = count
 			end
 
-			SellValue_SetTooltip(itemID, stackCount, AtlasLootTooltip);
-		end
-		)
+			SellValue_SetTooltip(AtlasLootTooltip, itemLink, stackCount);
+		end)
 	end
 
 	-- Hook quest reward tooltip
 	hooksecurefunc(GameTooltip, "SetQuestItem", function(tip, qtype, slot)
 		if qtype == "reward" or qtype == "choice" then
-			local link = GetQuestItemLink(qtype, slot);
 			local _, _, stackCount = GetQuestItemInfo(qtype, slot);
-			local itemID = SellValue_IDFromLink(link);
-
-			SellValue_SetTooltip(itemID, stackCount)
+			SellValue_SetTooltip(GameTooltip, GetQuestItemLink(qtype, slot), stackCount)
 		end
-	end
-	);
+	end)
 
 	-- Hook questlog reward tooltip
 	hooksecurefunc(GameTooltip, "SetQuestLogItem", function(tip, qtype, slot)
-		local stackCount = nil;
+		local stackCount;
 
 		if qtype == "reward" then
 			_, _, stackCount = GetQuestLogRewardInfo(slot);
@@ -146,47 +121,35 @@ function SellValue_OnLoad()
 			return
 		end
 
-		local link = GetQuestLogItemLink(qtype, slot);
-		local itemID = SellValue_IDFromLink(link);
-
-		SellValue_SetTooltip(itemID, stackCount);
-	end
-	);
+		SellValue_SetTooltip(GameTooltip, GetQuestLogItemLink(qtype, slot), stackCount);
+	end)
 
 	-- Hook trade skill tooltip
 	hooksecurefunc(GameTooltip, "SetTradeSkillItem", function(tip, tradeItemIndex, reagentIndex)
-		local stackCount = nil;
-		local link = nil;
+		local stackCount;
+		local itemLink;
 
 		if reagentIndex then
 			_, _, stackCount = GetTradeSkillReagentInfo(tradeItemIndex, reagentIndex);
-			link = GetTradeSkillReagentItemLink(tradeItemIndex, reagentIndex);
+			itemLink = GetTradeSkillReagentItemLink(tradeItemIndex, reagentIndex);
 		else
 			stackCount = GetTradeSkillNumMade(tradeItemIndex);
-			link = GetTradeSkillItemLink(tradeItemIndex);
+			itemLink = GetTradeSkillItemLink(tradeItemIndex);
 		end
 
-		local itemID = SellValue_IDFromLink(link);
-		SellValue_SetTooltip(itemID, stackCount);
-	end
-	);
+		SellValue_SetTooltip(GameTooltip, itemLink, stackCount);
+	end)
 
 	-- Trade from Player
 	hooksecurefunc(GameTooltip, "SetTradePlayerItem", function(tip, index)
 		local _, _, stackCount = GetTradePlayerItemInfo(index)
-		local link = GetTradePlayerItemLink(index)
-
-		local itemID = SellValue_IDFromLink(link)
-		SellValue_SetTooltip(itemID, stackCount)
+		SellValue_SetTooltip(GameTooltip, GetTradePlayerItemLink(index), stackCount)
 	end)
 
 	-- Trade from Target
 	hooksecurefunc(GameTooltip, "SetTradeTargetItem", function(tip, index)
 		local _, _, stackCount = GetTradeTargetItemInfo(index)
-		local link = GetTradeTargetItemLink(index)
-
-		local itemID = SellValue_IDFromLink(link)
-		SellValue_SetTooltip(itemID, stackCount)
+		SellValue_SetTooltip(GameTooltip, GetTradeTargetItemLink(index), stackCount)
 	end)
 end
 
@@ -215,9 +178,9 @@ function SellValue_OnTooltipAddMoney ()
 	SellValue_LastItemMoney = arg1;
 end
 
-function SellValue_SaveFor(bag, slot, name, money)
+function SellValue_SaveFor(bag, slot, itemID, money)
 
-	if not (bag and slot and name and money) then
+	if not (bag and slot and itemID and money) then
 		return ;
 	end ;
 
@@ -229,7 +192,7 @@ function SellValue_SaveFor(bag, slot, name, money)
 			SellValues = {};
 		end
 
-		SellValues[name] = costOfOne;
+		SellValues[itemID] = costOfOne;
 	end
 end
 
@@ -238,11 +201,11 @@ function SellValue_MerchantScan(frame)
 	for bag = 0, NUM_BAG_FRAMES do
 		for slot = 1, GetContainerNumSlots(bag) do
 
-			local itemName = SellValue_GetItemID(bag, slot);
-			if itemName ~= "" then
+			local itemID = SellValue_IDFromLink(GetContainerItemLink(bag, slot))
+			if itemID ~= "" then
 				SellValue_LastItemMoney = 0;
 				SellValue_Tooltip:SetBagItem(bag, slot);
-				SellValue_SaveFor(bag, slot, itemName, SellValue_LastItemMoney);
+				SellValue_SaveFor(bag, slot, itemID, SellValue_LastItemMoney);
 			end  -- if item name
 		end  -- for slot
 	end -- for bag
@@ -256,35 +219,15 @@ function SellValue_OnHide()
 	return GameTooltip_ClearMoney();
 end
 
-function SellValue_GetItemID(bag, slot)
-	local link;
-
-	if (bag == -1) then
-		link = GetInventoryItemLink("player", slot);
-	else
-		link = GetContainerItemLink(bag, slot);
-	end
-
-	return SellValue_IDFromLink(link);
-end
-
-function SellValue_IDFromLink(itemlink)
-	if not itemlink then
+function SellValue_IDFromLink(itemLink)
+	if not itemLink then
 		return
 	end
 
-	local foundlink, _, itemID = string.find(itemlink, "(item:%d+)");
-	if not foundlink then
+	local foundID, _, itemID = string.find(itemLink, "item:(%d+)");
+	if not foundID then
 		return
 	end
 
-	return itemID
-end
-
-function SellValue_IDFromName(name)
-	if not name then
-		return
-	end
-
-	return SellValues[name]
+	return tonumber(itemID)
 end
