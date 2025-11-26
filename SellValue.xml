@@ -12,19 +12,19 @@
 		</Layers>
 	</GameTooltip>
 
-  <Frame name="SellValue" parent="GameTooltip" hidden="false">
-  	<Scripts>
-	  	<OnLoad>
-  			SellValue_OnLoad();
-  		</OnLoad>
-  		<OnHide>
-  			SellValue_OnHide();
-  		</OnHide>
-	  	<OnEvent>
-  			SellValue_OnEvent();
-		</OnEvent>
-    </Scripts>
-    <Frames>
+	<Frame name="SellValue" parent="GameTooltip" hidden="false">
+		<Scripts>
+			<OnLoad>
+				SellValue_OnLoad();
+			</OnLoad>
+			<OnHide>
+				SellValue_OnHide();
+			</OnHide>
+			<OnEvent>
+				SellValue_OnEvent();
+			</OnEvent>
+		</Scripts>
+	<Frames>
 			<Frame name="$parentMoneyFrame" inherits="SmallMoneyFrameTemplate" hidden="false">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="LEFT"/>
