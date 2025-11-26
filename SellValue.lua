@@ -16,7 +16,7 @@ local function hooksecurefunc(arg1, arg2, arg3)
 end
 
 function SellValue_SetTooltip(tooltip, itemLink, stackCount)
-	local itemID = SellValue_IDFromLink(itemLink)
+	local itemID = SellValue_ItemIDFromLink(itemLink)
 	if not itemID then
 		return
 	end
@@ -201,7 +201,7 @@ function SellValue_MerchantScan(frame)
 	for bag = 0, NUM_BAG_FRAMES do
 		for slot = 1, GetContainerNumSlots(bag) do
 
-			local itemID = SellValue_IDFromLink(GetContainerItemLink(bag, slot))
+			local itemID = SellValue_ItemIDFromLink(GetContainerItemLink(bag, slot))
 			if itemID then
 				SellValue_LastItemMoney = 0;
 				SellValue_Tooltip:SetBagItem(bag, slot);
@@ -219,7 +219,7 @@ function SellValue_OnHide()
 	return GameTooltip_ClearMoney();
 end
 
-function SellValue_IDFromLink(itemLink)
+function SellValue_ItemIDFromLink(itemLink)
 	if not itemLink then
 		return
 	end
