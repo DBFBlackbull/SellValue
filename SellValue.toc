@@ -4,5 +4,5 @@
 ## Author: CapnBry & Greenman & kebabstorm & DBFBlackbull
 ## LoadOnDemand: 0
 ## SavedVariables: SellValues
-## OptionalDeps: AtlasLoot
+## OptionalDeps: AtlasLoot, ShaguTweaks
 SellValue.xml

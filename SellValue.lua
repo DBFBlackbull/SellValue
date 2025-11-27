@@ -15,13 +15,14 @@ local function hooksecurefunc(arg1, arg2, arg3)
 	end
 end
 
-function SellValue_SetTooltip(tooltip, itemLink, stackCount)
+local function SellValue_SetTooltip(tooltip, itemLink, stackCount)
 	local itemID = SellValue_ItemIDFromLink(itemLink)
 	if not itemID then
 		return
 	end
 
-	stackCount = math.max(stackCount, 1)
+	stackCount = tonumber(stackCount) or 1
+	stackCount = math.max(stackCount, 1) -- Items with charges report negative stackCount
 
 	local price = SellValues[itemID];
 	if price then
@@ -36,6 +37,7 @@ function SellValue_SetTooltip(tooltip, itemLink, stackCount)
 	end
 end
 
+local SellValue_Saved_OnTooltipAddMoney
 function SellValue_OnLoad()
 	this:RegisterEvent("MERCHANT_SHOW");
 	this:RegisterEvent("ADDON_LOADED");
@@ -44,7 +46,7 @@ function SellValue_OnLoad()
 
 	SellValue_Tooltip:SetScript("OnTooltipAddMoney", SellValue_OnTooltipAddMoney);
 
-	-- Hook item links tooltip
+	-- Hook item links tooltip in chat
 	hooksecurefunc("ChatFrame_OnHyperlinkShow", function(itemLink, text, button)
 		SellValue_SetTooltip(ItemRefTooltip, itemLink, 1);
 	end)
@@ -106,7 +108,7 @@ function SellValue_OnLoad()
 		end
 	end)
 
-	-- Hook questlog reward tooltip
+	-- Hook quest log reward tooltip
 	hooksecurefunc(GameTooltip, "SetQuestLogItem", function(tip, qtype, slot)
 		local stackCount;
 
@@ -137,6 +139,19 @@ function SellValue_OnLoad()
 		SellValue_SetTooltip(GameTooltip, itemLink, stackCount);
 	end)
 
+	-- Hook something, maybe enchanting / hunter pet training
+	hooksecurefunc(GameTooltip, "SetCraftItem", function(tip, skill, slot)
+		DEFAULT_CHAT_FRAME:AddMessage("[SellValue]: SetCraftItem hook called")
+		local _, _, stackCount = GetCraftReagentInfo(skill, slot)
+		SellValue_SetTooltip(GameTooltip, GetCraftReagentItemLink(skill, slot), stackCount)
+	end)
+
+	-- Hook something, maybe enchanting / hunter
+	hooksecurefunc(GameTooltip, "SetCraftSpell", function(tip, slot)
+		DEFAULT_CHAT_FRAME:AddMessage("[SellValue]: SetCraftItem hook called")
+		SellValue_SetTooltip(GameTooltip, GetCraftItemLink(slot), 1)
+	end)
+
 	-- Trade from Player
 	hooksecurefunc(GameTooltip, "SetTradePlayerItem", function(tip, index)
 		local _, _, stackCount = GetTradePlayerItemInfo(index)
@@ -148,11 +163,38 @@ function SellValue_OnLoad()
 		local _, _, stackCount = GetTradeTargetItemInfo(index)
 		SellValue_SetTooltip(GameTooltip, GetTradeTargetItemLink(index), stackCount)
 	end)
+
+	-- Hook auction house browse
+	hooksecurefunc(GameTooltip, "SetAuctionItem", function(tip, atype, index)
+		local _, _, stackCount = GetAuctionItemInfo(atype, index)
+		SellValue_SetTooltip(GameTooltip, GetAuctionItemLink(atype, index), stackCount)
+	end)
+
+	if ShaguTweaks and ShaguTweaks.GetItemLinkByName then
+		-- Hook auction house sell
+		hooksecurefunc(GameTooltip, "SetAuctionSellItem", function(tip)
+			local itemName, _, stackCount = GetAuctionSellItemInfo()
+			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
+		end)
+
+		-- Hook mail inbox
+		hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, mailID, attachmentIndex)
+			local itemName, _, stackCount = GetInboxItem(mailID, attachmentIndex)
+			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
+		end)
+
+		-- Hook mail send
+		hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, attachmentIndex)
+			local itemName, _, stackCount = GetSendMailItem(attachmentIndex)
+			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
+		end)
+	end
 end
 
 function SellValue_OnEvent()
 	if event == "ADDON_LOADED" and arg1 == "SellValue" then
-		return SellValue_InitializeDB();
+		SellValue_InitializeDB();
+		return SellValue:UnregisterEvent("ADDON_LOADED");
 	end
 
 	if event == "MERCHANT_SHOW" then
@@ -167,7 +209,8 @@ GameTooltip_OnEvent = function()
 	end
 end
 
-function SellValue_OnTooltipAddMoney ()
+local SellValue_LastItemMoney
+function SellValue_OnTooltipAddMoney()
 	-- call the original function first
 	SellValue_Saved_OnTooltipAddMoney();
 
