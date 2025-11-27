@@ -191,17 +191,6 @@ function SellValue_OnLoad()
 	end
 end
 
-function SellValue_OnEvent()
-	if event == "ADDON_LOADED" and arg1 == "SellValue" then
-		SellValue_InitializeDB();
-		return SellValue:UnregisterEvent("ADDON_LOADED");
-	end
-
-	if event == "MERCHANT_SHOW" then
-		return SellValue_MerchantScan(this);
-	end
-end
-
 SellValue_Saved_GameTooltip_OnEvent = GameTooltip_OnEvent;
 GameTooltip_OnEvent = function()
 	if event ~= "CLEAR_TOOLTIP" then
@@ -222,7 +211,7 @@ function SellValue_OnTooltipAddMoney()
 	SellValue_LastItemMoney = arg1;
 end
 
-function SellValue_SaveFor(bag, slot, itemID, money)
+local function SellValue_SaveFor(bag, slot, itemID, money)
 	if not (bag and slot and itemID and money) then
 		return
 	end
@@ -239,7 +228,7 @@ function SellValue_SaveFor(bag, slot, itemID, money)
 	end
 end
 
-function SellValue_MerchantScan(frame)
+local function SellValue_MerchantScan()
 
 	for bag = 0, NUM_BAG_FRAMES do
 		for slot = 1, GetContainerNumSlots(bag) do
@@ -260,6 +249,17 @@ function SellValue_OnHide()
 	-- points to us, a child of the tip
 	this = this:GetParent();
 	return GameTooltip_ClearMoney();
+end
+
+function SellValue_OnEvent()
+	if event == "ADDON_LOADED" and arg1 == "SellValue" then
+		SellValue_InitializeDB();
+		return SellValue:UnregisterEvent("ADDON_LOADED");
+	end
+
+	if event == "MERCHANT_SHOW" then
+		return SellValue_MerchantScan();
+	end
 end
 
 function SellValue_ItemIDFromLink(itemLink)
