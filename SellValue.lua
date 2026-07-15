@@ -171,25 +171,26 @@ function SellValue_OnLoad()
 	-- Hook mail inbox
 	hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, mailID, attachmentIndex)
 		local itemName, _, stackCount = GetInboxItem(mailID, attachmentIndex)
-		local itemLink
 		if GetInboxItemLink then
-			itemLink = GetInboxItemLink(mailID)
-		elseif ShaguTweaks and ShaguTweaks.GetItemLinkByName then
-			itemLink = ShaguTweaks.GetItemLinkByName(itemName)
+			return SellValue_SetTooltip(GameTooltip, GetInboxItemLink(mailID, attachmentIndex), stackCount)
 		end
-		SellValue_SetTooltip(GameTooltip, itemLink, stackCount)
+
+		if ShaguTweaks and ShaguTweaks.GetItemLinkByName then
+			return SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
+		end
+
 	end)
 
 	-- Hook mail send
 	hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, attachmentIndex)
 		local itemName, _, stackCount = GetSendMailItem(attachmentIndex)
-		local itemLink
 		if GetSendMailItemLink then
-			itemLink = GetSendMailItemLink()
-		elseif ShaguTweaks and ShaguTweaks.GetItemLinkByName then
-			itemLink = ShaguTweaks.GetItemLinkByName(itemName)
+			return SellValue_SetTooltip(GameTooltip, GetSendMailItemLink(attachmentIndex), stackCount)
 		end
-		SellValue_SetTooltip(GameTooltip, itemLink, stackCount)
+
+		if ShaguTweaks and ShaguTweaks.GetItemLinkByName then
+			return SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
+		end
 	end)
 
 	if ShaguTweaks and ShaguTweaks.GetItemLinkByName then
