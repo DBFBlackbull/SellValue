@@ -141,14 +141,12 @@ function SellValue_OnLoad()
 
 	-- Hook something, maybe enchanting / hunter pet training
 	hooksecurefunc(GameTooltip, "SetCraftItem", function(tip, skill, slot)
-		DEFAULT_CHAT_FRAME:AddMessage("[SellValue]: SetCraftItem hook called")
 		local _, _, stackCount = GetCraftReagentInfo(skill, slot)
 		SellValue_SetTooltip(GameTooltip, GetCraftReagentItemLink(skill, slot), stackCount)
 	end)
 
 	-- Hook something, maybe enchanting / hunter
 	hooksecurefunc(GameTooltip, "SetCraftSpell", function(tip, slot)
-		DEFAULT_CHAT_FRAME:AddMessage("[SellValue]: SetCraftItem hook called")
 		SellValue_SetTooltip(GameTooltip, GetCraftItemLink(slot), 1)
 	end)
 
@@ -170,22 +168,34 @@ function SellValue_OnLoad()
 		SellValue_SetTooltip(GameTooltip, GetAuctionItemLink(atype, index), stackCount)
 	end)
 
+	-- Hook mail inbox
+	hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, mailID, attachmentIndex)
+		local itemName, _, stackCount = GetInboxItem(mailID, attachmentIndex)
+		local itemLink
+		if GetInboxItemLink then
+			itemLink = GetInboxItemLink(mailID)
+		elseif ShaguTweaks and ShaguTweaks.GetItemLinkByName then
+			itemLink = ShaguTweaks.GetItemLinkByName(itemName)
+		end
+		SellValue_SetTooltip(GameTooltip, itemLink, stackCount)
+	end)
+
+	-- Hook mail send
+	hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, attachmentIndex)
+		local itemName, _, stackCount = GetSendMailItem(attachmentIndex)
+		local itemLink
+		if GetSendMailItemLink then
+			itemLink = GetSendMailItemLink()
+		elseif ShaguTweaks and ShaguTweaks.GetItemLinkByName then
+			itemLink = ShaguTweaks.GetItemLinkByName(itemName)
+		end
+		SellValue_SetTooltip(GameTooltip, itemLink, stackCount)
+	end)
+
 	if ShaguTweaks and ShaguTweaks.GetItemLinkByName then
 		-- Hook auction house sell
 		hooksecurefunc(GameTooltip, "SetAuctionSellItem", function(tip)
 			local itemName, _, stackCount = GetAuctionSellItemInfo()
-			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
-		end)
-
-		-- Hook mail inbox
-		hooksecurefunc(GameTooltip, "SetInboxItem", function(tip, mailID, attachmentIndex)
-			local itemName, _, stackCount = GetInboxItem(mailID, attachmentIndex)
-			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
-		end)
-
-		-- Hook mail send
-		hooksecurefunc(GameTooltip, "SetSendMailItem", function(tip, attachmentIndex)
-			local itemName, _, stackCount = GetSendMailItem(attachmentIndex)
 			SellValue_SetTooltip(GameTooltip, ShaguTweaks.GetItemLinkByName(itemName), stackCount)
 		end)
 	end
